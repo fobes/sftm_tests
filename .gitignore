@@ -1,0 +1,10 @@
+*.obj
+*.log
+*.tlog
+*.txt
+*.pdb
+/x64/*
+/Win32/*
+/Debug/*
+/Release/*
+*.vcxproj.user
