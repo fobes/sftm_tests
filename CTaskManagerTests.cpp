@@ -2,8 +2,8 @@
 #include "../SFTM/CTaskManager.h"
 
 const int nStartTaskCount = 100;
-const int nMidTaskCount = 200;
-const int nEndTaskCount = 200;
+const int nMidTaskCount = 100;
+const int nEndTaskCount = 100;
 constexpr unsigned long long int nPushedTasks = nStartTaskCount * nMidTaskCount * nEndTaskCount;
 
 std::atomic<unsigned long long int> nExecutedTasks = { 0 };
@@ -67,7 +67,7 @@ TEST(CTaskManager, Starting)
 {
 	CTaskManager& manager = CTaskManager::GetInstance();
 
-	const auto nWorkersCount = std::thread::hardware_concurrency() - 1;
+	const auto nWorkersCount = std::thread::hardware_concurrency();
 	EXPECT_GT(nWorkersCount, 1);
 	EXPECT_TRUE(manager.Start(nWorkersCount));
 	EXPECT_EQ(manager.GetWorkersCount(), nWorkersCount);}

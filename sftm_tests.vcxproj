@@ -59,12 +59,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\sftm\SFTM.vcxproj.vcxproj">
-      <Project>{6100b294-35d3-4e1a-8b98-2109f5844f2f}</Project>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\sftm\sftm.vcxproj.vcxproj">
+      <Project>{6100b294-35d3-4e1a-8b98-2109f5844f2f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
