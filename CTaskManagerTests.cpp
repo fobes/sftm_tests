@@ -33,10 +33,8 @@ public:
 public:
 	virtual bool Execute(CWorker& worker) noexcept override
 	{
-		CTaskCounter counter;
 		for (int n = 0; n < nEndTaskCount; n++)
-			EXPECT_TRUE(worker.PushTask(new CEndTask(counter)));
-		worker.WorkUntil(counter);
+			EXPECT_TRUE(worker.PushTask(new CEndTask(m_taskCounter)));
 
 		delete this;
 
@@ -52,10 +50,8 @@ public:
 public:
 	virtual bool Execute(CWorker& worker) noexcept override
 	{
-		CTaskCounter counter;
 		for (int n = 0; n < nMidTaskCount; n++)
-			EXPECT_TRUE(worker.PushTask(new CMidTask(counter)));
-		worker.WorkUntil(counter);
+			EXPECT_TRUE(worker.PushTask(new CMidTask(m_taskCounter)));
 
 		delete this;
 
