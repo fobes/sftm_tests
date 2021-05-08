@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../SFTM/CTaskManager.h"
+#include "../SFTM/CSftmTaskManager.h"
 
 const int nSyncStartTaskCount = 100;
 const int nSyncMidTaskCount = 100;
@@ -11,14 +11,14 @@ constexpr unsigned long long int nAsyncPushedTasks = 10000;
 std::atomic<unsigned long long int> nExecutedSyncTasks = { 0 };
 std::atomic<unsigned long long int> nExecutedAsyncTasks = { 0 };
 
-class CSyncEndTask : public CTask
+class CSyncEndTask : public CSftmTask
 {
 public:
-	CSyncEndTask(CChainController* pChainController) :CTask(pChainController) {}
+	CSyncEndTask(CSftmChainController* pChainController) :CSftmTask(pChainController) {}
 	virtual ~CSyncEndTask() {}
 
 public:
-	virtual bool Execute(CWorker& worker) noexcept override
+	virtual bool Execute(CSftmWorker& worker) noexcept override
 	{
 		nExecutedSyncTasks++;
 
@@ -27,14 +27,14 @@ public:
 		return true;
 	}
 };
-class CSyncMidTask : public CTask
+class CSyncMidTask : public CSftmTask
 {
 public:
-	CSyncMidTask(CChainController* pChainController) :CTask(pChainController) {}
+	CSyncMidTask(CSftmChainController* pChainController) :CSftmTask(pChainController) {}
 	virtual ~CSyncMidTask() {}
 
 public:
-	virtual bool Execute(CWorker& worker) noexcept override
+	virtual bool Execute(CSftmWorker& worker) noexcept override
 	{
 		for (int n = 0; n < nSyncEndTaskCount; n++)
 			EXPECT_TRUE(worker.PushTask(new CSyncEndTask(m_pChainController)));
@@ -46,14 +46,14 @@ public:
 		return true;
 	}
 };
-class CSyncStartTask : public CTask
+class CSyncStartTask : public CSftmTask
 {
 public:
-	CSyncStartTask(CChainController *pChainController) :CTask(pChainController) {}
+	CSyncStartTask(CSftmChainController *pChainController) :CSftmTask(pChainController) {}
 	virtual ~CSyncStartTask() {}
 
 public:
-	virtual bool Execute(CWorker& worker) noexcept override
+	virtual bool Execute(CSftmWorker& worker) noexcept override
 	{
 		for (int n = 0; n < nSyncMidTaskCount; n++)
 			EXPECT_TRUE(worker.PushTask(new CSyncMidTask(m_pChainController)));
@@ -66,14 +66,14 @@ public:
 	}
 };
 
-class CAsyncEndTask : public CTask
+class CAsyncEndTask : public CSftmTask
 {
 public:
-	CAsyncEndTask(CChainController* pChainController) :CTask(pChainController) {}
+	CAsyncEndTask(CSftmChainController* pChainController) :CSftmTask(pChainController) {}
 	virtual ~CAsyncEndTask() {}
 
 public:
-	virtual bool Execute(CWorker& worker) noexcept override
+	virtual bool Execute(CSftmWorker& worker) noexcept override
 	{
 		nExecutedAsyncTasks++;
 
@@ -83,37 +83,37 @@ public:
 	}
 };
 
-TEST(CTaskManager, Starting)
+TEST(CSftmTaskManager, Starting)
 {
-	CTaskManager& manager = CTaskManager::GetInstance();
+	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
 
 	const auto nWorkersCount = std::thread::hardware_concurrency();
 	EXPECT_GT(nWorkersCount, 1);
 	EXPECT_TRUE(manager.Start(nWorkersCount, []() {}));
 	EXPECT_EQ(manager.GetWorkersCount(), nWorkersCount);
 }
-TEST(CTaskManager, GetCurrentWorker)
+TEST(CSftmTaskManager, GetCurrentWorker)
 {
-	CTaskManager& manager = CTaskManager::GetInstance();
-	auto pCurrentWorker = CWorker::GetCurrentThreadWorker();
+	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
+	auto pCurrentWorker = CSftmWorker::GetCurrentThreadWorker();
 	EXPECT_NE(pCurrentWorker, nullptr);
 }
-TEST(CTaskManager, PushNullTask)
+TEST(CSftmTaskManager, PushNullTask)
 {
-	CTaskManager& manager = CTaskManager::GetInstance();
-	auto pCurrentWorker = CWorker::GetCurrentThreadWorker();
+	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
+	auto pCurrentWorker = CSftmWorker::GetCurrentThreadWorker();
 
 	EXPECT_FALSE(pCurrentWorker->PushTask(nullptr));
 }
 
-TEST(CTaskManager, SyncTaskProcessing)
+TEST(CSftmTaskManager, SyncTaskProcessing)
 {
 	std::cout << "[   INFO   ] Pushed tasks: " << nSyncPushedTasks << std::endl;
 
-	CTaskManager& manager = CTaskManager::GetInstance();
-	auto pCurrentWorker = CWorker::GetCurrentThreadWorker();
+	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
+	auto pCurrentWorker = CSftmWorker::GetCurrentThreadWorker();
 
-	CChainController chainController;
+	CSftmChainController chainController;
 	for (int n = 0; n < nSyncStartTaskCount; n++)
 		ASSERT_TRUE(pCurrentWorker->PushTask(new CSyncStartTask(&chainController)));
 	pCurrentWorker->WorkUntil(chainController);
@@ -122,12 +122,12 @@ TEST(CTaskManager, SyncTaskProcessing)
 
 	std::cout << "[   INFO   ] Executed tasks: " << nExecutedSyncTasks << std::endl;
 }
-TEST(CTaskManager, AsyncTaskProcessing)
+TEST(CSftmTaskManager, AsyncTaskProcessing)
 {
 	std::cout << "[   INFO   ] Pushed tasks: " << nAsyncPushedTasks << std::endl;
 
-	CTaskManager& manager = CTaskManager::GetInstance();
-	auto pCurrentWorker = CWorker::GetCurrentThreadWorker();
+	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
+	auto pCurrentWorker = CSftmWorker::GetCurrentThreadWorker();
 
 	for (int n = 0; n < nAsyncPushedTasks; n++)
 		ASSERT_TRUE(pCurrentWorker->PushTask(new CAsyncEndTask(nullptr)));
@@ -137,7 +137,7 @@ TEST(CTaskManager, AsyncTaskProcessing)
 	std::cout << "[   INFO   ] Executed tasks: " << nExecutedAsyncTasks << std::endl;
 }
 
-TEST(CTaskManager, Stopping)
+TEST(CSftmTaskManager, Stopping)
 {
-	CTaskManager::GetInstance().Stop();
+	CSftmTaskManager::GetInstance().Stop();
 }
