@@ -18,13 +18,11 @@ public:
 	virtual ~CSyncEndTask() {}
 
 public:
-	virtual bool Execute(CSftmWorker& worker) noexcept override
+	virtual void Execute(CSftmWorker& worker) noexcept override
 	{
 		nExecutedSyncTasks++;
 
 		delete this;
-
-		return true;
 	}
 };
 class CSyncMidTask : public CSftmTask
@@ -34,7 +32,7 @@ public:
 	virtual ~CSyncMidTask() {}
 
 public:
-	virtual bool Execute(CSftmWorker& worker) noexcept override
+	virtual void Execute(CSftmWorker& worker) noexcept override
 	{
 		for (int n = 0; n < nSyncEndTaskCount; n++)
 			EXPECT_TRUE(worker.PushTask(new CSyncEndTask(m_pChainController)));
@@ -42,8 +40,6 @@ public:
 		nExecutedSyncTasks++;
 
 		delete this;
-
-		return true;
 	}
 };
 class CSyncStartTask : public CSftmTask
@@ -53,7 +49,7 @@ public:
 	virtual ~CSyncStartTask() {}
 
 public:
-	virtual bool Execute(CSftmWorker& worker) noexcept override
+	virtual void Execute(CSftmWorker& worker) noexcept override
 	{
 		for (int n = 0; n < nSyncMidTaskCount; n++)
 			EXPECT_TRUE(worker.PushTask(new CSyncMidTask(m_pChainController)));
@@ -61,8 +57,6 @@ public:
 		nExecutedSyncTasks++;
 
 		delete this;
-
-		return true;
 	}
 };
 
@@ -73,13 +67,11 @@ public:
 	virtual ~CAsyncEndTask() {}
 
 public:
-	virtual bool Execute(CSftmWorker& worker) noexcept override
+	virtual void Execute(CSftmWorker& worker) noexcept override
 	{
 		nExecutedAsyncTasks++;
 
 		delete this;
-
-		return true;
 	}
 };
 
