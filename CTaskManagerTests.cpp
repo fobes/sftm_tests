@@ -24,6 +24,10 @@ public:
 
 		delete this;
 	}
+	virtual unsigned GetUniqueIndex() const noexcept override
+	{
+		return 1;
+	}
 };
 class CSyncMidTask : public CSftmTask
 {
@@ -40,6 +44,10 @@ public:
 		nExecutedSyncTasks++;
 
 		delete this;
+	}
+	virtual unsigned GetUniqueIndex() const noexcept override
+	{
+		return 2;
 	}
 };
 class CSyncStartTask : public CSftmTask
@@ -58,6 +66,10 @@ public:
 
 		delete this;
 	}
+	virtual unsigned GetUniqueIndex() const noexcept override
+	{ 
+		return 3;
+	}
 };
 
 class CAsyncEndTask : public CSftmTask
@@ -73,6 +85,10 @@ public:
 
 		delete this;
 	}
+	virtual unsigned GetUniqueIndex() const noexcept override
+	{
+		return 4;
+	}
 };
 
 TEST(CSftmTaskManager, Starting)
@@ -81,21 +97,15 @@ TEST(CSftmTaskManager, Starting)
 
 	const auto nWorkersCount = std::thread::hardware_concurrency();
 	EXPECT_GT(nWorkersCount, 1);
-	EXPECT_TRUE(manager.Start(nWorkersCount, []() {}));
+	EXPECT_TRUE(manager.Start(nWorkersCount));
 	EXPECT_EQ(manager.GetWorkersCount(), nWorkersCount);
+	manager.RunProfiling();
 }
 TEST(CSftmTaskManager, GetCurrentWorker)
 {
 	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
 	auto pCurrentWorker = CSftmWorker::GetCurrentThreadWorker();
 	EXPECT_NE(pCurrentWorker, nullptr);
-}
-TEST(CSftmTaskManager, PushNullTask)
-{
-	CSftmTaskManager& manager = CSftmTaskManager::GetInstance();
-	auto pCurrentWorker = CSftmWorker::GetCurrentThreadWorker();
-
-	EXPECT_FALSE(pCurrentWorker->PushTask(nullptr));
 }
 
 TEST(CSftmTaskManager, SyncTaskProcessing)
